@@ -1,0 +1,90 @@
+# choose the task to be executed
+task_name: ${task.name}
+
+# name of the experiment - if not set, inferred from task
+exp_name: ''
+
+# set random seed
+seed: 3407
+
+# number of environments
+num_envs: 128
+
+# set the maximum number of learning iterations to train for. overrides default per-environment setting
+max_iterations: ''
+
+# device config
+device: 'cuda:0'
+
+# visualization: viewer
+render: False
+
+# set checkpoint path
+checkpoint: ''
+
+# training directory - checkpoints are saved under {train_dir}/{exp_name}/nn/
+train_dir: 'runs_dagger'
+
+# eval_mode - if set, run policy in inference mode
+eval_mode: False
+
+# if set, will directly start training for debugging
+debug_training: False
+
+# directory to save the rigid body poses in for rendering
+export_rigid_body_poses_dir: ""
+
+# wandb
+wandb_activate: True
+wandb_project: ${task_name}
+wandb_run_name: dagger
+
+defaults:
+  - task: 'FrankaMP'
+  - dagger: 'config'
+  - override hydra/job_logging: disabled
+  - _self_
+
+# set the directory where the output files get saved
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+# test options
+test_frequency: 10 # test every n x num_envs episodes
+test_episodes: 1
+
+# set True for samplers
+sample_mode: False
+
+## Device config
+#  'physx' or 'flex'
+physics_engine: 'physx'
+# whether to use cpu or gpu pipeline
+pipeline: 'gpu'
+# device for running physics simulation
+sim_device: 'cuda:0'
+# device to run RL
+rl_device: 'cuda:0'
+graphics_device_id: 0
+multi_gpu: False
+
+# disables rendering
+headless: True
+force_render: False
+
+## PhysX arguments
+num_threads: 4 # Number of worker threads per scene used by PhysX - for CPU PhysX only.
+solver_type: 1 # 0: pgs, 1: tgs
+num_subscenes: 4 # Splits the simulation into N physics scenes and runs each one in a separate thread
+
+# logging cfg
+logging:
+  suppress_timing: False
+
+# resume training
+resume: ''
+ckpt_path: 'None'
+
+storage_devices: [0]
