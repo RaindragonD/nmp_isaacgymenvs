@@ -53,11 +53,14 @@ class FrankaMPFull(FrankaMP):
         self.obstacle_configs = []
         self.obstacle_handles = []
         self.max_obstacles = 0
+        self.gt_actions = []
 
         for env_idx, demo in enumerate(self.batch):
             self.start_config[env_idx] = torch.tensor(demo['states'][0][:7], device=self.device)
             self.goal_config[env_idx] = torch.tensor(demo['states'][0][7:14], device=self.device)
-
+            gt_actions = torch.tensor(demo['gt_actions'], device=self.device)
+            self.gt_actions.append(gt_actions)
+            
             pcd_params = demo['states'][0][15:]
             obstacle_config = decompose_scene_pcd_params_obs(pcd_params)
             self.obstacle_configs.append(obstacle_config)
