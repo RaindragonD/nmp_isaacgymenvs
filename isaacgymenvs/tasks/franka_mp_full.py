@@ -1,7 +1,7 @@
 """
 This code is kinda messy for compatibility between Dagger and residual RL, TODO: cleanup later
 """
-import ipdb; ipdb.set_trace()
+
 import time
 
 import hydra
