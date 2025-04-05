@@ -30,6 +30,7 @@ from fabrics_sim.worlds.voxels import VoxelCounter
 
 class FrankaMPFull(FrankaMP):
     def __init__(self, cfg, rl_device, sim_device, graphics_device_id, headless, virtual_screen_capture, force_render, num_env_per_env=1):
+        import ipdb; ipdb.set_trace()
         self.device = sim_device
         self.enable_fabric = cfg["fabric"]["enable"]
         self.force_no_fabric = False
