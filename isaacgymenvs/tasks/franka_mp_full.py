@@ -469,7 +469,7 @@ class FrankaMPFull(FrankaMP):
         self.lock_in[env_ids] = False
         self.compute_observations()
 
-    def compute_reward(self, actions):
+    def compute_reward(self, actions=None):
         self.check_robot_collision()
         current_angles = self.get_joint_angles()
         current_ee = self.get_ee_from_joint(current_angles)
@@ -508,8 +508,9 @@ class FrankaMPFull(FrankaMP):
 
         self.collision_flags[self.reset_buf == 1] = 0 # reset collision rate after logging
 
-        self.extras['actions/residual_action_magnitude'] = actions.norm(dim=1).mean()
-        self.extras['actions/base_action_magnitude'] = self.base_delta_action.norm(dim=1).mean()
+        if actions is not None:
+            self.extras['actions/residual_action_magnitude'] = actions.norm(dim=1).mean()
+            self.extras['actions/base_action_magnitude'] = self.base_delta_action.norm(dim=1).mean()
 
     def compute_fabric_action(self, abs_actions):
         cspace_target = abs_actions[:, 0:7]
