@@ -21,7 +21,6 @@ class DemoLoader:
             self.hdf5_file = h5py.File(file_path, 'r')
             self.demos = self.hdf5_file['data']
             self.total_demos = len(self.demos)
-            import ipdb; ipdb.set_trace()
             print(f"Loaded HDF5 file with {self.total_demos} demonstrations")
             return True
         except Exception as e:
