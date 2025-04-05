@@ -30,7 +30,6 @@ from fabrics_sim.worlds.voxels import VoxelCounter
 
 class FrankaMPFull(FrankaMP):
     def __init__(self, cfg, rl_device, sim_device, graphics_device_id, headless, virtual_screen_capture, force_render, num_env_per_env=1):
-        print("test point 0")
         self.device = sim_device
         self.enable_fabric = cfg["fabric"]["enable"]
         self.force_no_fabric = False
@@ -39,12 +38,11 @@ class FrankaMPFull(FrankaMP):
         self.base_policy_only = cfg["env"]["base_policy_only"]
 
         # Demo loading
-        print("test point 1")
         hdf5_path = cfg["env"]["hdf5_path"]
         self.demo_loader = DemoLoader(hdf5_path, cfg["env"]["numEnvs"])
+        import ipdb; ipdb.set_trace()
         self.batch_idx = cfg["env"]["batch_idx"]
         
-        print("test point 2")
 
         # need to change the logic here (2 layers of reset ; multiple start & goal in one env ; relaunch IG)
         self.batch = self.demo_loader.get_next_batch(batch_idx=self.batch_idx)
