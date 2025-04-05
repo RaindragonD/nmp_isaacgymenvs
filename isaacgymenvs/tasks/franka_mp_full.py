@@ -40,7 +40,6 @@ class FrankaMPFull(FrankaMP):
         # Demo loading
         hdf5_path = cfg["env"]["hdf5_path"]
         self.demo_loader = DemoLoader(hdf5_path, cfg["env"]["numEnvs"])
-        import ipdb; ipdb.set_trace()
         self.batch_idx = cfg["env"]["batch_idx"]
         
 
