@@ -569,21 +569,24 @@ class FrankaMPFull(FrankaMP):
         return ee_pose
 
     def pre_physics_step(self, actions):
-        delta_actions = actions.clone().to(self.device)
+        # delta_actions = actions.clone().to(self.device)
+        # current_joint_state = self.get_joint_angles()
+        # delta_actions = delta_actions * self.action_scale
+        # self.actions = delta_actions
+        # # since the below is commonly used for debugging, let's temporarily keep it here
+        # # self.base_policy_only = True
+        # # self.enable_fabric = True
+        # # self.force_no_fabric = False
+        # if self.base_policy_only:
+        #     abs_actions = current_joint_state + self.base_delta_action
+        # elif self.no_base_action:
+        #     abs_actions = current_joint_state + delta_actions
+        # else:
+        #     abs_actions = current_joint_state + delta_actions + self.base_delta_action
+
+        delta_actions = (actions - self.get_joint_angles()) * 1
+        abs_actions = self.get_joint_angles() + delta_actions
         gripper_state = torch.Tensor([[0.035, 0.035]] * self.num_envs).to(self.device)
-        current_joint_state = self.get_joint_angles()
-        delta_actions = delta_actions * self.action_scale
-        self.actions = delta_actions
-        # since the below is commonly used for debugging, let's temporarily keep it here
-        # self.base_policy_only = True
-        # self.enable_fabric = True
-        # self.force_no_fabric = False
-        if self.base_policy_only:
-            abs_actions = current_joint_state + self.base_delta_action
-        elif self.no_base_action:
-            abs_actions = current_joint_state + delta_actions
-        else:
-            abs_actions = current_joint_state + delta_actions + self.base_delta_action
         if abs_actions.shape[-1] == 7:
             abs_actions = torch.cat((abs_actions, gripper_state), dim=1)
 
