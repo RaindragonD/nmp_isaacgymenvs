@@ -29,18 +29,18 @@
 import isaacgym
 import torch
 
-from .franka_mp import FrankaMP
+# from .franka_mp import FrankaMP
 from .franka_mp_full import FrankaMPFull
-from .franka_mp_rrl import FrankaMPRRL
-from .franka_mp_simple import FrankaMPSimple
-from .franka_mp_random import FrankaMPRandom
+# from .franka_mp_rrl import FrankaMPRRL
+# from .franka_mp_simple import FrankaMPSimple
+# from .franka_mp_random import FrankaMPRandom
 
 
 
 # Mappings from strings to environments
 isaacgym_task_map = {
     "FrankaMPFull": FrankaMPFull,
-    "FrankaMPRRL": FrankaMPRRL,
-    "FrankaMPSimple": FrankaMPSimple,
-    "FrankaMPRandom": FrankaMPRandom,
+#     "FrankaMPRRL": FrankaMPRRL,
+#     "FrankaMPSimple": FrankaMPSimple,
+#     "FrankaMPRandom": FrankaMPRandom,
 }

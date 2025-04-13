@@ -640,7 +640,7 @@ class FrankaMPFull(FrankaMP):
         super().post_physics_step()
 
 
-@hydra.main(config_name="config", config_path="../cfg/")
+@hydra.main(config_name="config", config_path="../cfg/", version_base=None)
 def launch_test(cfg: DictConfig):
     np.random.seed(0)
     torch.manual_seed(0)

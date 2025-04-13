@@ -274,7 +274,7 @@ class FrankaMP(VecTask):
         asset_options.collapse_fixed_joints = False
         asset_options.disable_gravity = True
         asset_options.thickness = 0.001
-        asset_options.default_dof_drive_mode = gymapi.DOF_MODE_POS
+        asset_options.default_dof_drive_mode = int(gymapi.DOF_MODE_POS)
         asset_options.use_mesh_materials = True
         franka_asset = self.gym.load_asset(self.sim, asset_root, franka_asset_file, asset_options)
         self.franka_asset = franka_asset
@@ -1004,7 +1004,7 @@ class FrankaMP(VecTask):
         pass
 
 
-@hydra.main(config_name="config", config_path="../cfg/")
+@hydra.main(config_name="config", config_path="../cfg/", version_base=None)
 def launch_test(cfg: DictConfig):
     np.random.seed(0)
     torch.manual_seed(0)
