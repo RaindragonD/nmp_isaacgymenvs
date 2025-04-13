@@ -16,7 +16,7 @@ from isaacgymenvs.utils.reformat import omegaconf_to_dict
 from isaacgymenvs.utils.demo_loader import DemoLoader
 from isaacgymenvs.utils.torch_jit_utils import *
 
-from utils.pcd_utils import decompose_scene_pcd_params_obs, compute_scene_oracle_pcd
+from nmp.utils.pcd_utils import decompose_scene_pcd_params_obs, compute_scene_oracle_pcd
 from collections import OrderedDict
 from omegaconf import DictConfig
 from tqdm import tqdm

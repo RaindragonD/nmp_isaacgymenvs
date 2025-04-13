@@ -19,7 +19,7 @@ from omegaconf import DictConfig
 from collections import OrderedDict
 from tqdm import tqdm
 from scipy.spatial.transform import Rotation
-from model.legacy_model import NeuralMPModel
+# from model.legacy_model import NeuralMPModel
 from robofin.pointcloud.torch import FrankaSampler
 
 IMAGE_TYPES = {
@@ -136,8 +136,8 @@ class FrankaMP(VecTask):
         self.success_flags = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for failure, 1 for success
         self.collision_flags = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for no collision, 1 for collision
         self.reaching_flags = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for not reached, 1 for reached
-        self.base_model = NeuralMPModel.from_pretrained(self.base_policy_url)
-        self.base_model.eval()
+        # self.base_model = NeuralMPModel.from_pretrained(self.base_policy_url)
+        # self.base_model.eval()
 
         # Refresh tensors & Reset all environments
         self._refresh()
@@ -470,33 +470,33 @@ class FrankaMP(VecTask):
             obs_base["current_angles"] = robot_config
             obs_base["goal_angles"] = self.goal_config.clone()
             obs_base["compute_pcd_params"] = self.combined_pcds.clone()
-            with torch.no_grad():
-                with torch.autocast('cuda', dtype=torch.float16):
-                    sub_delta_action = self.base_model.policy.get_action(obs_dict=obs_base, mean_actions=self.use_mean_actions)
+            # with torch.no_grad():
+            #     with torch.autocast('cuda', dtype=torch.float16):
+            #         sub_delta_action = self.base_model.policy.get_action(obs_dict=obs_base, mean_actions=self.use_mean_actions)
 
-            robot_config += sub_delta_action
+            # robot_config += sub_delta_action
 
         self.base_delta_action = robot_config - self.states['q'][:, :7]
 
-        pcd_feats = self.base_model.policy.nets['policy'].model.encoded_feats.clone()
-        pcd_feats = pcd_feats.contiguous().view(pcd_feats.size(0), -1) # (num_envs, 1038) , 1038 = 1024 (pointnet++_feat) + 7 (current) + 7 (goal)
+        # pcd_feats = self.base_model.policy.nets['policy'].model.encoded_feats.clone()
+        # pcd_feats = pcd_feats.contiguous().view(pcd_feats.size(0), -1) # (num_envs, 1038) , 1038 = 1024 (pointnet++_feat) + 7 (current) + 7 (goal)
 
-        obs = pcd_feats
-        if self.obs_buf.size(1) == 14:
-            obs = torch.cat((robot_config, self.goal_config), dim=1)
+        # obs = pcd_feats
+        # if self.obs_buf.size(1) == 14:
+        #     obs = torch.cat((robot_config, self.goal_config), dim=1)
+        # # elif self.obs_buf.size(1) == 1038:
+        # #     obs[:, -14:-7] += self.base_delta_action
+        # elif self.obs_buf.size(1) == 1031:
+        #     obs = obs[:, :-7]
         # elif self.obs_buf.size(1) == 1038:
-        #     obs[:, -14:-7] += self.base_delta_action
-        elif self.obs_buf.size(1) == 1031:
-            obs = obs[:, :-7]
-        elif self.obs_buf.size(1) == 1038:
-            obs[:, -7:] = self.base_delta_action.clone()
-        elif self.obs_buf.size(1) == 1045:
-            obs = torch.cat((obs, self.base_delta_action), dim=1)
+        #     obs[:, -7:] = self.base_delta_action.clone()
+        # elif self.obs_buf.size(1) == 1045:
+        #     obs = torch.cat((obs, self.base_delta_action), dim=1)
 
-        self.obs_buf = obs
+        # self.obs_buf = obs
 
-        if self.base_policy_sub_steps != 1:
-            self.update_robot_pcds() # update pcd for current states
+        # if self.base_policy_sub_steps != 1:
+        #     self.update_robot_pcds() # update pcd for current states
         return self.obs_buf
 
     def check_robot_collision(self):
