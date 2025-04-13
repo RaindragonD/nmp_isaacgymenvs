@@ -468,6 +468,11 @@ class FrankaMPFull(FrankaMP):
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 0
         self.lock_in[env_ids] = False
+        
+        self.success_flags[env_ids] = 0
+        self.reaching_flags[env_ids] = 0
+        self.collision_flags[env_ids] = 0
+        
         self.compute_observations()
 
     def compute_reward(self, actions=None):
@@ -478,10 +483,10 @@ class FrankaMPFull(FrankaMP):
         joint_err = torch.norm(current_angles - self.goal_config, dim=1)
         pos_err = torch.norm(current_ee[:, :3] - self.goal_ee[:, :3], dim=1)
         quat_err = orientation_error(self.goal_ee[:, 3:], current_ee[:, 3:])
-        self.goal_reaching = (pos_err < self.lock_in_pos_err) & (quat_err < self.lock_in_rot_err)
-        self.lock_in[self.goal_reaching] = True
-        self.goal_reaching = (pos_err < 0.05) & (quat_err < 15.0) # making it slightly more tolerant atm
-        # self.goal_reaching = (pos_err < 0.01) & (quat_err < 15.0) # TODO: should apply this metric later
+        # self.goal_reaching = (pos_err < self.lock_in_pos_err) & (quat_err < self.lock_in_rot_err)
+        # self.lock_in[self.goal_reaching] = True
+        self.reaching_flags = (pos_err < 0.05) & (quat_err < 15.0) # making it slightly more tolerant atm
+        # self.reaching_flags = (pos_err < 0.01) & (quat_err < 15.0) # TODO: should apply this metric later
 
         num_visited_voxels_t1 = torch.sum(self.voxel_visit_binary, dim=1)
 
@@ -498,24 +503,20 @@ class FrankaMPFull(FrankaMP):
         self.extras['intrinsic_rewards'] = torch.mean(intrinsic_rewards).item()
         self.extras['num_visited_voxels_ave'] = torch.mean(num_visited_voxels_t1).item()
 
-        self.success_flags[self.goal_reaching & (self.reset_buf == 1) & (self.collision_flags == 0)] = 1
-        self.success_flags[(~self.goal_reaching) & (self.reset_buf == 1)] = 0
-        self.reaching_flags[self.goal_reaching & (self.reset_buf == 1)] = 1 # this records reaching rate at the last step, while goal_reaching will be updated each step
-        self.reaching_flags[(~self.goal_reaching) & (self.reset_buf == 1)] = 0
-        self.has_collided[self.collision_flags == 1] = 1
+        self.success_flags = torch.logical_and(self.reaching_flags==1, self.collision_flags == 0)
 
         self.extras['success_rate'] = torch.mean(self.success_flags.float()).item()
-        self.extras['collision_rate'] = torch.mean(self.has_collided.float()).item()
-        self.extras['reaching_rate'] = torch.mean(self.reaching_flags.float()).item()
-        self.extras['collided_not_reaching_rate'] = torch.mean(torch.logical_and(self.has_collided == 1, self.reaching_flags == 0).float()).item()
-        self.extras['not_collided_not_reaching_rate'] = torch.mean(torch.logical_and(self.has_collided == 0, self.reaching_flags == 0).float()).item()
-        self.extras['collided_and_reaching_rate'] = torch.mean(torch.logical_and(self.has_collided == 1, self.reaching_flags == 1).float()).item()
+        self.extras['failure_rate'] = 1 - torch.mean(self.success_flags.float()).item()
+        self.extras['collision_rate'] = torch.mean(self.collision_flags.float()).item()
+        self.extras['unreached_rate'] = 1 - torch.mean(self.reaching_flags.float()).item()
+        
+        self.extras['collided_unreached_rate'] = torch.mean(torch.logical_and(self.collision_flags == 1, self.reaching_flags == 0).float()).item()
+        self.extras['collided_only_rate'] = torch.mean(torch.logical_and(self.collision_flags == 1, self.reaching_flags == 1).float()).item()
+        self.extras['unreached_only_rate'] = torch.mean(torch.logical_and(self.collision_flags == 0, self.reaching_flags == 0).float()).item()
         
         self.extras['success_array'] = self.success_flags
         self.extras['reaching_array'] = self.reaching_flags
-        self.extras['collision_array'] = self.has_collided
-
-        self.collision_flags[self.reset_buf == 1] = 0 # reset collision rate after logging
+        self.extras['collision_array'] = self.collision_flags
 
         if actions is not None:
             self.extras['actions/residual_action_magnitude'] = actions.norm(dim=1).mean()
@@ -706,7 +707,7 @@ def compute_franka_reward(
     rewards = reaching_rewards + intrinsic_rewards
 
     # Compute resets
-    reset_buf = torch.where((progress_buf >= max_episode_length - 1), torch.ones_like(reset_buf), reset_buf)
+    reset_buf = torch.where((progress_buf >= max_episode_length), torch.ones_like(reset_buf), reset_buf)
 
     return rewards, reset_buf, reaching_rewards, intrinsic_rewards
 

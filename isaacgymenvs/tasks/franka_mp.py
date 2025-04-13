@@ -134,7 +134,6 @@ class FrankaMP(VecTask):
         self.seed_joint_angles = self.canonical_joint_config.clone()
         self.num_collisions = torch.zeros(self.num_envs, device=self.device)
         self.success_flags = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for failure, 1 for success
-        self.has_collided = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for no collision, 1 for collision
         self.collision_flags = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for no collision, 1 for collision
         self.reaching_flags = torch.zeros(cfg["env"]["numEnvs"], device=self.device) # 0 for not reached, 1 for reached
         self.base_model = NeuralMPModel.from_pretrained(self.base_policy_url)
@@ -904,18 +903,6 @@ class FrankaMP(VecTask):
         self.base_model.start_episode()
         self.compute_observations()
 
-    def pre_physics_step(self, actions):
-        delta_actions = actions.clone().to(self.device)
-        gripper_state = torch.Tensor([[0.035, 0.035]] * self.num_envs).to(self.device)
-
-        delta_actions = delta_actions * self.action_scale
-        self.actions = delta_actions
-        abs_actions = self.get_joint_angles() + delta_actions + self.base_delta_action
-        if abs_actions.shape[-1] == 7:
-            abs_actions = torch.cat((abs_actions, gripper_state), dim=1)
-
-        self.gym.set_dof_position_target_tensor(self.sim, gymtorch.unwrap_tensor(abs_actions))
-
     def post_physics_step(self):
         self.progress_buf += 1
 
@@ -930,7 +917,7 @@ class FrankaMP(VecTask):
         if sum(self.scene_collision) > 0:
             # if self.cfg["env"]["reset_on_collision"]:
             #     self.reset_buf = torch.where(self.scene_collision > 0, torch.ones_like(self.reset_buf), self.reset_buf)
-            self.success_flags[self.scene_collision.bool()] = 0
+            # self.success_flags[self.scene_collision.bool()] = 0
             self.collision_flags[self.scene_collision.bool()] = 1
 
     def update_robot_pcds(self, robot_config=None):
