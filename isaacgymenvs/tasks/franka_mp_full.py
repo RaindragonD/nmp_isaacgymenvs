@@ -502,10 +502,18 @@ class FrankaMPFull(FrankaMP):
         self.success_flags[(~self.goal_reaching) & (self.reset_buf == 1)] = 0
         self.reaching_flags[self.goal_reaching & (self.reset_buf == 1)] = 1 # this records reaching rate at the last step, while goal_reaching will be updated each step
         self.reaching_flags[(~self.goal_reaching) & (self.reset_buf == 1)] = 0
+        self.has_collided[self.collision_flags == 1] = 1
 
         self.extras['success_rate'] = torch.mean(self.success_flags.float()).item()
-        self.extras['collision_rate'] = torch.mean(self.collision_flags.float()).item()
+        self.extras['collision_rate'] = torch.mean(self.has_collided.float()).item()
         self.extras['reaching_rate'] = torch.mean(self.reaching_flags.float()).item()
+        self.extras['collided_not_reaching_rate'] = torch.mean(torch.logical_and(self.has_collided == 1, self.reaching_flags == 0).float()).item()
+        self.extras['not_collided_not_reaching_rate'] = torch.mean(torch.logical_and(self.has_collided == 0, self.reaching_flags == 0).float()).item()
+        self.extras['collided_and_reaching_rate'] = torch.mean(torch.logical_and(self.has_collided == 1, self.reaching_flags == 1).float()).item()
+        
+        self.extras['success_array'] = self.success_flags
+        self.extras['reaching_array'] = self.reaching_flags
+        self.extras['collision_array'] = self.has_collided
 
         self.collision_flags[self.reset_buf == 1] = 0 # reset collision rate after logging
 
