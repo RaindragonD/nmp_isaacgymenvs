@@ -261,7 +261,7 @@ class FrankaMP(VecTask):
 
     def _create_franka(self, ):
         asset_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../assets")
-        franka_asset_file = "urdf/franka_description/robots/franka_panda_gripper.urdf"
+        franka_asset_file = "urdf/franka_description/robots/franka_panda_gripper_nolimit.urdf"
 
         if "asset" in self.cfg["env"]:
             asset_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.cfg["env"]["asset"].get("assetRoot", asset_root))
